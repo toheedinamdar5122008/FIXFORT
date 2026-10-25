@@ -1,0 +1,29 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install curl and the Docker CLI for container exec operations.
+# The Docker CLI is REQUIRED: the API reloads the shield containers via
+# `docker exec <shield> nginx -s reload` (the docker socket is mounted). Without
+# the `docker` binary, shield_ctl falls back to a NO-OP reload, so a newly
+# applied ModSecurity rule never activates and the Practice Room exam can never
+# pass. `docker.io` provides the CLI from Debian's default repos (no extra repo).
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    ca-certificates \
+    docker.io \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt /app/
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY api/ /app/api/
+COPY shield/ /app/shield/
+COPY findings/ /app/findings/
+COPY fixfort/ /app/fixfort/
+COPY tests/ /app/tests/
+COPY CONTRACTS.md /app/
+
+EXPOSE 8000
+
+CMD ["python", "-m", "uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]

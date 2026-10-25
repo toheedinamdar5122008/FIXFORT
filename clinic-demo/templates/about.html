@@ -1,0 +1,8 @@
+{% extends "base.html" %}{% block c %}
+<div class="card">
+  <h1>About Greenfield Clinic</h1>
+  <p class="lead">A fictional medical-clinic portal built as a safe, deliberately-vulnerable target for the FixFort demonstration.</p>
+  <p style="color:var(--mu)">It ships with three planted weaknesses — SQL injection on staff login, stored XSS in patient comments, and a PHP2Shell RCE on document upload (CVE-2026-109618). FixFort scans for them, proves a temporary shield rule in its Practice Room, and — once a human approves — blocks the attack in minutes while real staff keep working.</p>
+  <div class="alertbox a-mut" style="margin-top:18px"><span class="ic">🔒</span><span>No real people or data. Runs on loopback only. Never expose this app to a network.</span></div>
+</div>
+{% endblock %}

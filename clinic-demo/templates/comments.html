@@ -1,0 +1,18 @@
+{% extends "base.html" %}{% block c %}
+<div class="card">
+  <h1>Patient Feedback</h1>
+  <p class="lead">Leave a comment for the clinic. <span style="color:var(--mu)">(Stored-XSS demonstration target)</span></p>
+  <form method="post">
+    <label for="t">Your comment</label>
+    <textarea id="t" name="text" placeholder="Enter comment…" aria-label="Comment"></textarea>
+    <button>Post comment</button>
+  </form>
+  {% if comments %}
+    <h2 style="margin-top:26px;font-size:15px;color:var(--mu);text-transform:uppercase;letter-spacing:.08em;font-family:ui-monospace,monospace">Recent comments</h2>
+    {% for c in comments %}
+      <div class="cmt">{% if mode == "vulnerable" %}{{ c|safe }}{% else %}{{ c }}{% endif %}</div>
+    {% endfor %}
+    {% if mode == "vulnerable" %}<div class="alertbox a-warn" style="margin-top:14px"><span class="ic">⚠</span><span>Comments are rendered as <b>raw HTML</b> — a <code>&lt;script&gt;</code> here executes in every visitor's browser. That's the stored-XSS flaw.</span></div>{% endif %}
+  {% endif %}
+</div>
+{% endblock %}

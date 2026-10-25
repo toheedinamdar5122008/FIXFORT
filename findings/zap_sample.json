@@ -1,0 +1,23 @@
+{
+  "site": "http://victim-live:5000",
+  "alerts": [
+    {
+      "pluginId": "40018",
+      "alertRef": "40018-1",
+      "alert": "SQL Injection",
+      "name": "SQL Injection",
+      "riskcode": "3",
+      "confidence": "2",
+      "riskdesc": "High (Medium)",
+      "desc": "SQL injection may be possible in username parameter on /login",
+      "uri": "http://victim-live:5000/login",
+      "param": "username",
+      "attack": "' OR 1=1 --",
+      "evidence": "Welcome admin",
+      "solution": "Use parameterized queries or prepared statements.",
+      "cweid": "89",
+      "wascid": "19",
+      "sourceid": "1"
+    }
+  ]
+}

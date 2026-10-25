@@ -1,0 +1,12 @@
+{% extends "base.html" %}{% block c %}
+<div class="card">
+  <h1>Greenfield Clinic Portal</h1>
+  <p class="lead">Welcome to the clinic. Target application for the Hackyard Build 2026 vulnerability demonstration — pick an endpoint to test, and FixFort watches every request.</p>
+  <div style="display:grid;gap:12px">
+    <a href="/login"><button style="width:100%">Staff Login — SQL injection target →</button></a>
+    <a href="/comment"><button style="width:100%;background:#8B7CF6">Patient Comments — stored XSS target →</button></a>
+    <a href="/upload.php"><button style="width:100%;background:#F59E0B">Document Upload — PHP2Shell (CVE-2026-109618) →</button></a>
+  </div>
+  <div class="alertbox a-mut" style="margin-top:22px"><span class="ic">🛈</span><span>Try an attack here, then watch it appear live on the FixFort dashboard. Once a finding is protected, the same attack is blocked with <code>403</code> — while real staff still get in.</span></div>
+</div>
+{% endblock %}

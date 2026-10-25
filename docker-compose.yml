@@ -1,0 +1,142 @@
+services:
+  # ============================================================================
+  # 1. VICTIM LIVE APPLICATION (The real website)
+  # Internal network only - NOT accessible from host directly!
+  # ============================================================================
+  victim-live:
+    build:
+      context: ./victim-app
+      dockerfile: Dockerfile
+    container_name: victim-live
+    restart: unless-stopped
+    environment:
+      - MODE=vulnerable
+      - PORT=5000
+    networks:
+      - live-net
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/health')"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ============================================================================
+  # 2. VICTIM SANDBOX APPLICATION (The Practice Room copy)
+  # Internal network only - NOT accessible from host directly!
+  # ============================================================================
+  victim-sandbox:
+    build:
+      context: ./victim-app
+      dockerfile: Dockerfile
+    container_name: victim-sandbox
+    restart: unless-stopped
+    environment:
+      - MODE=vulnerable
+      - PORT=5000
+    networks:
+      - sandbox-net
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/health')"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ============================================================================
+  # 3. SHIELD LIVE (Nginx + ModSecurity protecting victim-live)
+  # Host Port: 8080
+  # ============================================================================
+  shield-live:
+    image: owasp/modsecurity-crs:nginx
+    container_name: shield-live
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - ./shield/nginx-live.conf:/etc/nginx/templates/conf.d/default.conf.template:ro
+      - ./shield/modsecurity.conf:/etc/nginx/modsec/modsecurity.conf:ro
+      - ./shield/rules-live:/etc/nginx/modsec/rules:ro
+      - ./shield/logs:/var/log/nginx
+    environment:
+      - BACKEND=http://victim-live:5000
+      - MODSEC_RULE_ENGINE=On
+      - PARANOIA=1
+      - ANOMALY_INBOUND=999999 # Keep CRS from premature blocking; FixFort rules block
+    networks:
+      - live-net
+      - backend-net
+    depends_on:
+      victim-live:
+        condition: service_healthy
+
+  # ============================================================================
+  # 4. SHIELD SANDBOX (Nginx + ModSecurity protecting victim-sandbox)
+  # Host Port: 8081
+  # ============================================================================
+  shield-sandbox:
+    image: owasp/modsecurity-crs:nginx
+    container_name: shield-sandbox
+    restart: unless-stopped
+    ports:
+      - "8081:80"
+    volumes:
+      - ./shield/nginx-sandbox.conf:/etc/nginx/templates/conf.d/default.conf.template:ro
+      - ./shield/modsecurity.conf:/etc/nginx/modsec/modsecurity.conf:ro
+      - ./shield/rules-sandbox:/etc/nginx/modsec/rules:ro
+      - ./shield/logs:/var/log/nginx
+    environment:
+      - BACKEND=http://victim-sandbox:5000
+      - MODSEC_RULE_ENGINE=On
+      - PARANOIA=1
+      - ANOMALY_INBOUND=999999
+    networks:
+      - sandbox-net
+      - backend-net
+    depends_on:
+      victim-sandbox:
+        condition: service_healthy
+
+  # ============================================================================
+  # 5. FIXFORT API (FastAPI + SQLite + Event Feed + Shield Control)
+  # Host Port: 8000
+  # ============================================================================
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: fixfort-api
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./fixfort.db:/app/fixfort.db
+      - ./shield/rules-live:/app/shield/rules-live
+      - ./shield/rules-sandbox:/app/shield/rules-sandbox
+      - ./shield/logs:/app/shield/logs
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - ENVIRONMENT=demonstration
+      - LIVE_SHIELD_URL=http://shield-live:80
+      - SANDBOX_SHIELD_URL=http://shield-sandbox:80
+      - DEMO_TARGET_URL=http://shield-live:80
+      - LIVE_SHIELD_CONTAINER=shield-live
+      - SANDBOX_SHIELD_CONTAINER=shield-sandbox
+      - RULES_LIVE_DIR=/app/shield/rules-live
+      - RULES_SANDBOX_DIR=/app/shield/rules-sandbox
+      - SHIELD_LOGS_PATH=/app/shield/logs/access.log
+      - SHIELD_EXEC_MODE=docker
+    networks:
+      - backend-net
+    depends_on:
+      - shield-live
+      - shield-sandbox
+
+networks:
+  live-net:
+    internal: true # Isolates victim-live completely behind shield-live
+  sandbox-net:
+    internal: true # Isolates victim-sandbox completely behind shield-sandbox
+  backend-net:
+    driver: bridge

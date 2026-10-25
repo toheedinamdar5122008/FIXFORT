@@ -1,0 +1,22 @@
+{% extends "base.html" %}{% block c %}
+<div class="card">
+  <h1>Clinic Staff Login</h1>
+  <p class="lead">Authorised staff only. <span style="color:var(--mu)">(SQL-injection demonstration target)</span></p>
+  <form method="post">
+    <label for="u">Username</label>
+    <input id="u" name="username" placeholder="e.g. O'Brien" autocomplete="off" aria-label="Username">
+    <label for="p">Password</label>
+    <input id="p" name="password" type="password" placeholder="Password" aria-label="Password">
+    <button>Log in</button>
+  </form>
+  {% if breach %}
+    <div class="alertbox a-breach" id="msg"><span class="ic">⚠</span><span><b>SQL INJECTION SUCCESSFUL.</b> Welcome {{ user }} — authenticated with <b>no valid password</b>. The login query was rewritten by the input. This is the hole FixFort virtually patches.</span></div>
+  {% elif user %}
+    <div class="alertbox a-ok" id="msg"><span class="ic">✓</span><span>Welcome {{ user }} — you are signed in.</span></div>
+  {% elif blocked %}
+    <div class="alertbox a-warn" id="msg"><span class="ic">🛡</span><span><b>Blocked by FixFort.</b> This request matched a live shield rule and never reached the app.</span></div>
+  {% elif msg %}
+    <div class="alertbox a-mut" id="msg"><span class="ic">✗</span><span>{{ msg }}</span></div>
+  {% endif %}
+</div>
+{% endblock %}

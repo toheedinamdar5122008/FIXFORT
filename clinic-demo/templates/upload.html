@@ -1,0 +1,16 @@
+{% extends "base.html" %}{% block c %}
+<div class="card">
+  <h1>Patient Document Upload</h1>
+  <p class="lead">Attach a note to a patient document. <span style="color:var(--mu)">(PHP2Shell RCE target — CVE-2026-109618)</span></p>
+  <form method="post">
+    <label for="n">Note / caption</label>
+    <input id="n" name="note" placeholder="e.g. O'Brien's scan results" autocomplete="off" aria-label="Upload note">
+    <button>Upload</button>
+  </form>
+  {% if result %}
+    <div class="alertbox {{ 'a-breach' if tone=='breach' else 'a-warn' if tone=='warn' else 'a-ok' }}">
+      <span class="ic">{{ '⚠' if tone=='breach' else '🛡' if tone=='warn' else '✓' }}</span><span>{{ result }}</span>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

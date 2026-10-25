@@ -1,0 +1,9 @@
+{
+  "id": "F-001",
+  "target": "/login",
+  "parameter": "username",
+  "type": "sqli",
+  "severity": "high",
+  "source": "zap",
+  "description": "Login query built by string concatenation"
+}
