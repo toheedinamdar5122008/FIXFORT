@@ -313,7 +313,7 @@ if __name__ == '__main__':
     print('\n' + '='*62)
     print('  FixFort stand-in is RUNNING.  Keep this window OPEN.')
     print('='*62)
-    print(f'  Clinic (the attacked website) : http://localhost:{LIVE_PORT}   {"✓ responding" if _ok else "… starting"}')
+    print(f'  Clinic (the attacked website) : http://localhost:{LIVE_PORT}   {"[OK] responding" if _ok else "... starting"}')
     print(f'  FixFort API (for the dashboard): http://localhost:{API_PORT}')
     print('  Then in a 2nd terminal:  cd ../frontend && npm install && npm run dev')
     print('  (The red "development server" WARNING below is NORMAL — not an error.)')
